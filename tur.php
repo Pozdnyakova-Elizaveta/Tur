@@ -1,35 +1,39 @@
 <?php
 require 'config.php';
+$filters=[];
 function getTours($pdo, $filters) {
     if (!empty($filters)) {
-        // Вызов функции фильтрации
-        $stmt = $pdo->prepare("SELECT * FROM filtr_tur(:min_category_otel, :min_stoim, :max_stoim, :gorod, :start_data, :okonch_data, :colvo_turistov)");
-        $stmt->bindParam(':min_category_otel', $filters['min_category_otel'], PDO::PARAM_INT);
-        $stmt->bindParam(':min_stoim', $filters['min_stoim'], PDO::PARAM_STR);
-        $stmt->bindParam(':max_stoim', $filters['max_stoim'], PDO::PARAM_STR);
-        $stmt->bindParam(':gorod', $filters['gorod'], PDO::PARAM_STR);
-        $stmt->bindParam(':start_data', $filters['start_data']);
-        $stmt->bindParam(':okonch_data', $filters['okonch_data']);
-        $stmt->bindParam(':colvo_turistov', $filters['colvo_turistov'], PDO::PARAM_INT);
+        // Подготовка параметров для фильтрации
+        $params = [
+            ':min_category_otel' => $filters['min_category_otel'] !== null ? $filters['min_category_otel'] : null,
+            ':min_stoim' => $filters['min_stoim'] !== null ? $filters['min_stoim'] : null,
+            ':max_stoim' => $filters['max_stoim'] !== null ? $filters['max_stoim'] : null,
+            ':gorod' => $filters['gorod'] !== null ? $filters['gorod'] : null,
+            ':start_data' => $filters['start_data'] !== null && trim($filters['start_data']) !== '' ? $filters['start_data'] : null,
+            ':okonch_data' => $filters['okonch_data'] !== null && trim($filters['okonch_data']) !== '' ? $filters['okonch_data'] : null,
+            ':colvo_turistov' => $filters['colvo_turistov'] !== null ? $filters['colvo_turistov'] : null,
+        ];
+
+        // Формируем SQL-запрос
+        $query = "SELECT * FROM filtr_tur(:min_category_otel, :min_stoim, :max_stoim, :gorod, :start_data, :okonch_data, :colvo_turistov)";
+        $stmt = $pdo->prepare($query);
+
+        // Привязываем параметры
+        foreach ($params as $key => $value) {
+            if ($value !== null) {
+                $stmt->bindParam($key, $value);
+            } else {
+                // Если значение null, можно использовать PDO::PARAM_NULL
+                $stmt->bindValue($key, null, PDO::PARAM_NULL);
+            }
+        }
     } else {
         // Получаем 10 туров, не позднее текущей даты
         $stmt = $pdo->prepare("SELECT * FROM \"Tur\" WHERE \"Date_nach\" >= CURRENT_DATE LIMIT 10");
     }
-
     $stmt->execute();
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC); 
 }
-
-// Получаем фильтры из POST-запроса
-$filters = [
-    'min_category_otel' => isset($_POST['min_category_otel']) ? intval($_POST['min_category_otel']) : null,
-    'min_stoim' => isset($_POST['min_stoim']) ? $_POST['min_stoim'] : null,
-    'max_stoim' => isset($_POST['max_stoim']) ? $_POST['max_stoim'] : null,
-    'gorod' => isset($_POST['gorod']) ? $_POST['gorod'] : null,
-    'start_data' => isset($_POST['start_data']) ? $_POST['start_data'] : null,
-    'okonch_data' => isset($_POST['okonch_data']) ? $_POST['okonch_data'] : null,
-    'colvo_turistov' => isset($_POST['colvo_turistov']) ? intval($_POST['colvo_turistov']) : null,
-];
 
 // Получаем туры
 $tours = getTours($pdo, $filters);

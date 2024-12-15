@@ -152,7 +152,7 @@ try {
                     <td><?= htmlspecialchars($purchase['status']) ?></td>
                     <td><?= htmlspecialchars($purchase['pk_putevka']) ?></td>
                     <td>
-                        <a href="booking.php?id=<?= htmlspecialchars($purchase['pk_putevka']) ?>">Подробная информация</a>
+                        <a href="booking_details.php?putevka_id=<?= htmlspecialchars($purchase['pk_putevka']) ?>">Подробная информация</a>
                     </td>
                 </tr>
             <?php endforeach; ?>

@@ -1,35 +1,59 @@
 <?php 
 require 'config.php'; 
- 
+
 // Обработка формы 
 $bookingInformation = []; 
 $errorMessage = ''; 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') { 
-    $tourist_id = intval($_POST['tourist_id']); 
-    $putevka_id = intval($_POST['putevka_id']); 
- 
+$putevka_id = null;
+$turist_id = null;
+
+// Проверка, передан ли идентификатор путевки через параметр URL
+if (isset($_GET['putevka_id'])) {
+    $putevka_id = intval($_GET['putevka_id']);
+}
+
+if ($putevka_id) {
+    try {
+        // Получение идентификатора туриста на основе идентификатора путевки
+        $stmt = $pdo->prepare("SELECT \"PK_Turist\" FROM \"Putevka\" WHERE \"PK_Putevka\" = :putevka_id");
+        $stmt->execute(['putevka_id' => $putevka_id]);
+        $turist = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        // Проверяем, найден ли турист
+        if ($turist) {
+            $turist_id = $turist['PK_Turist'];
+        } else {
+            $errorMessage = 'Турист не найден для указанной путевки.';
+        }
+    } catch (PDOException $e) {
+        // Обработка ошибок при выполнении запроса
+        $errorMessage = "Ошибка при выполнении запроса: " . $e->getMessage();
+    }
+}
+
+// Выполнение запроса информации о бронировании сразу по загрузке страницы
+if ($turist_id) {
     try { 
         // Получение информации о бронировании 
-        $stmt = $pdo->prepare("SELECT * FROM get_booking_information(:tourist_id, :putevka_id)"); 
+        $stmt = $pdo->prepare("SELECT * FROM get_booking_information(:turist_id, :putevka_id)"); 
         $stmt->execute([ 
-            'tourist_id' => $tourist_id, 
+            'turist_id' => $turist_id, 
             'putevka_id' => $putevka_id, 
         ]); 
         $bookingInformation = $stmt->fetchAll(PDO::FETCH_ASSOC); 
- 
+
         // Проверка результата 
         if (empty($bookingInformation)) { 
             $errorMessage = 'Нет данных для указанного туриста и путевки.'; 
         } 
- 
     } catch (PDOException $e) { 
         // Обработка ошибок при выполнении запроса 
         $errorMessage = "Ошибка при выполнении запроса: " . $e->getMessage(); 
     } 
-} 
+}
 ?> 
- 
- <!DOCTYPE html> 
+
+<!DOCTYPE html> 
 <html lang="ru"> 
 <head> 
     <meta charset="UTF-8"> 
@@ -78,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border: none;
         }
 
-        input[type="date"], select {
+        input[type="number"] {
             background-color: rgba(255, 255, 255, 0.3);
             color: #fff;
         }
@@ -117,21 +141,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             background-color: rgba(255, 255, 255, 0.3);
         }
 
-        tbody td {
-            position: relative;
-        }
-
-        tbody td:hover::before {
-            content: "";
-            position: absolute;
-            left: 0;
-            right: 0;
-            top: -9999px;
-            bottom: -9999px;
-            background-color: rgba(255, 255, 255, 0.2);
-            z-index: -1;
-        }
-
         .table-wrapper {
             max-width: 100%;
             overflow-x: auto;
@@ -146,18 +155,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head> 
 <body> 
     <div class="container">
-        <h1>Получить информацию о бронировании</h1>
-        <form method="POST">
-            <label for="tourist_id">Идентификатор туриста:</label>
-            <input type="number" name="tourist_id" required placeholder="Идентификатор туриста" min="1">
-            <label for="putevka_id">Идентификатор путевки:</label>
-            <input type="number" name="putevka_id" required placeholder="Идентификатор путевки" min="1">
-            <button type="submit">Получить информацию о бронировании</button>
-        </form>
+        <h1>Информация о бронировании</h1>
         <?php if (!empty($errorMessage)): ?>
             <p style="color: red;"><?php echo htmlspecialchars($errorMessage); ?></p>
         <?php elseif (!empty($bookingInformation)): ?>
-            <h2>Информация о бронировании</h2>
             <div class="table-wrapper">
                 <table>
                     <thead>

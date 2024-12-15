@@ -141,7 +141,6 @@ try {
     <?php if (!empty($purchaseHistory)): ?>
         <table>
             <tr>
-                <th>Клиент</th>
                 <th>Название тура</th>
                 <th>Статус</th>
                 <th>ID Путевки</th>
@@ -149,12 +148,11 @@ try {
             </tr>
             <?php foreach ($purchaseHistory as $purchase): ?>
                 <tr>
-                    <td><?= htmlspecialchars($purchase['Klient']) ?></td>
-                    <td><?= htmlspecialchars($purchase['Nazv_tura_klienta']) ?></td>
-                    <td><?= htmlspecialchars($purchase['Status']) ?></td>
-                    <td><?= htmlspecialchars($purchase['PK_Putevka']) ?></td>
+                    <td><?= htmlspecialchars($purchase['nazv_tura_klienta']) ?></td>
+                    <td><?= htmlspecialchars($purchase['status']) ?></td>
+                    <td><?= htmlspecialchars($purchase['pk_putevka']) ?></td>
                     <td>
-                        <a href="booking.php?id=<?= htmlspecialchars($purchase['PK_Putevka']) ?>">Подробная информация</a>
+                        <a href="booking.php?id=<?= htmlspecialchars($purchase['pk_putevka']) ?>">Подробная информация</a>
                     </td>
                 </tr>
             <?php endforeach; ?>

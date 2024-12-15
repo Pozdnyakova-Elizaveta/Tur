@@ -32,38 +32,134 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <title>Статистика тура</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(45deg, #49a09d, #5f2c82); 
+        }
+
+        .container {
+            width: 80%;
+            margin: 50px auto;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            color: #333;
+        }
+
+        input[type="number"], button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            background-color: #49a09d;
+            color: white;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #5f2c82;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        td {
+            word-wrap: break-word;
+        }
+
+        .error-message {
+            color: red;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .no-data-message {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Статистика тура</h1>
 
-    <!-- Форма для ввода идентификатора тура -->
-    <form method="post">
-        <label for="tour_id">Идентификатор тура:</label>
-        <input type="number" id="tour_id" name="tour_id" required>
-        <button type="submit">Получить статистику тура</button>
-    </form>
+    <div class="container">
+        <h1>Статистика тура</h1>
 
-    <?php if (!empty($errorMessage)): ?>
-        <p style="color: red;"><?php echo htmlspecialchars($errorMessage); ?></p>
-    <?php elseif (!empty($tourStatistics)): ?>
-        <table border="1">
-            <tr>
-                <th>Название тура</th>
-                <th>Проданные билеты</th>
-                <th>Средняя цена путевки</th>
-                <th>Прибыль от тура</th>
-            </tr>
-            <?php foreach ($tourStatistics as $stat): ?>
-                <tr>
-                    <td><?php echo isset($stat['nazv_tur']) ? htmlspecialchars($stat['nazv_tur']) : 'Нет данных'; ?></td>
-                    <td><?php echo isset($stat['prodannye_bilety']) ? htmlspecialchars($stat['prodannye_bilety']) : 'Нет данных'; ?></td>
-                    <td><?php echo isset($stat['srednyaya_cena_putevki']) ? htmlspecialchars(substr($stat['srednyaya_cena_putevki'], 0, -2)) : 'Нет данных'; ?> руб.</td>
-                    <td><?php echo isset($stat['pribyl_tura']) ? htmlspecialchars(substr($stat['pribyl_tura'], 0, -2)) : 'Нет данных'; ?> руб.</td>
-                </tr>
-            <?php endforeach; ?>
-        </table>
-    <?php else: ?>
-        <p>Нет данных для отображения.</p>
-    <?php endif; ?>
+        <form method="post">
+            <label for="tour_id">Идентификатор тура:</label>
+            <input type="number" id="tour_id" name="tour_id" required>
+            <button type="submit">Получить статистику тура</button>
+        </form>
+
+        <?php if (!empty($errorMessage)): ?>
+            <p class="error-message"><?php echo htmlspecialchars($errorMessage); ?></p>
+        <?php elseif (!empty($tourStatistics)): ?>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Название тура</th>
+                        <th>Проданные билеты</th>
+                        <th>Средняя цена путевки</th>
+                        <th>Прибыль от тура</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($tourStatistics as $stat): ?>
+                        <tr>
+                            <td><?php echo isset($stat['nazv_tur']) ? htmlspecialchars($stat['nazv_tur']) : 'Нет данных'; ?></td>
+                            <td><?php echo isset($stat['prodannye_bilety']) ? htmlspecialchars($stat['prodannye_bilety']) : 'Нет данных'; ?></td>
+                            <td><?php echo isset($stat['srednyaya_cena_putevki']) ? htmlspecialchars(substr($stat['srednyaya_cena_putevki'], 0, -2)) : 'Нет данных'; ?> руб.</td>
+                            <td><?php echo isset($stat['pribyl_tura']) ? htmlspecialchars(substr($stat['pribyl_tura'], 0, -2)) : 'Нет данных'; ?> руб.</td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php else: ?>
+            <p class="no-data-message">Нет данных для отображения.</p>
+        <?php endif; ?>
+    </div>
+
 </body>
 </html>

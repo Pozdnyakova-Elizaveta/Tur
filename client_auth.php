@@ -70,38 +70,104 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <title>Регистрация и Авторизация Клиента</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(45deg, #49a09d, #5f2c82);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        input, select, button {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        input:focus, select:focus {
+            border-color: #49a09d;
+            box-shadow: 0 0 8px rgba(73, 160, 157, 0.5);
+            outline: none;
+        }
+
+        button {
+            background-color: #49a09d;
+            color: white;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #5f2c82;
+        }
+
+        .message {
+            color: red;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Регистрация Клиента</h1>
+    <div class="container">
+        <h1>Регистрация и Авторизация</h1>
+        <?php if ($message): ?>
+            <p class="message"> <?= htmlspecialchars($message) ?> </p>
+        <?php endif; ?>
 
-    <?php if ($message): ?>
-        <p style="color: red;"><?= htmlspecialchars($message) ?></p>
-    <?php endif; ?>
+        <form method="post">
+            <h2>Регистрация</h2>
+            <input type="text" name="familia" placeholder="Фамилия" required>
+            <input type="text" name="imya" placeholder="Имя" required>
+            <input type="text" name="otchestvo" placeholder="Отчество" required>
+            <input type="date" name="data_rozhd" required>
+            <input type="text" name="nomer_tel" placeholder="Номер телефона" required>
+            <input type="email" name="pochta" placeholder="Электронная почта" required>
+            <select name="pk_pol" required>
+                <option value="">--Выберите пол--</option>
+                <?php foreach ($genders as $gender): ?>
+                    <option value="<?= $gender['PK_Pol'] ?>">
+                        <?= htmlspecialchars($gender['Nazv_Pol']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+            <button type="submit" name="register">Зарегистрироваться</button>
+        </form>
 
-    <form method="post">
-        <h2>Регистрация</h2>
-        <input type="text" name="familia" placeholder="Фамилия" required>
-        <input type="text" name="imya" placeholder="Имя" required>
-        <input type="text" name="otchestvo" placeholder="Отчество" required>
-        <input type="date" name="data_rozhd" placeholder="Дата рождения" required>
-        <input type="text" name="nomer_tel" placeholder="Номер телефона" required>
-        <input type="email" name="pochta" placeholder="Электронная почта" required>
-
-        <label for="pk_pol">Выберите пол:</label>
-        <select name="pk_pol" required>
-            <option value="">--Выберите пол--</option>
-            <?php foreach ($genders as $gender): ?>
-                <option value="<?= $gender['PK_Pol'] ?>"><?= htmlspecialchars($gender['Nazv_Pol']) ?></option>
-            <?php endforeach; ?>
-        </select>
-
-        <button type="submit" name="register">Зарегистрироваться</button>
-    </form>
-
-    <form method="post">
-        <h2>Авторизация</h2>
-        <input type="email" name="pochta" placeholder="Электронная почта" required>
-        <button type="submit" name="login">Войти</button>
-    </form>
+        <form method="post">
+            <h2>Авторизация</h2>
+            <input type="email" name="pochta" placeholder="Электронная почта" required>
+            <button type="submit" name="login">Войти</button>
+        </form>
+    </div>
 </body>
 </html>

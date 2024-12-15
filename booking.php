@@ -1,7 +1,6 @@
 <?php
 require 'config.php';  
 
-
 $bookingStatus = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -45,7 +44,6 @@ $statusList = $statusStmt->fetchAll(PDO::FETCH_ASSOC);
 
 $polStmt = $pdo->query("SELECT \"PK_Pol\", \"Nazv_Pol\" FROM \"Pol\"");
 $polList = $polStmt->fetchAll(PDO::FETCH_ASSOC);
-
 ?>
 
 <!DOCTYPE html>
@@ -54,67 +52,146 @@ $polList = $polStmt->fetchAll(PDO::FETCH_ASSOC);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Оформление заявки</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: sans-serif;
+        }
+
+        body {
+            background: linear-gradient(45deg, #49a09d, #5f2c82);
+            font-weight: 100;
+        }
+
+        .container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        h1, h2 {
+            color: white;
+        }
+
+        form {
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            color: white;
+            font-size: 16px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .container form {
+            margin-top: 20px;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        p {
+            color: white;
+            font-size: 16px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Оформление заявки на тур</h1>
+    <div class="container">
+        <h1>Оформление заявки на тур</h1>
 
-    <form method="POST">
-        <label for="Familia">Фамилия:</label>
-        <input type="text" name="Familia" id="Familia" required>
+        <form method="POST">
+            <label for="Familia">Фамилия:</label>
+            <input type="text" name="Familia" id="Familia" required>
+            <label for="Imya">Имя:</label>
+            <input type="text" name="Imya" id="Imya" required>
 
-        <label for="Imya">Имя:</label>
-        <input type="text" name="Imya" id="Imya" required>
+            <label for="Otchestvo">Отчество:</label>
+            <input type="text" name="Otchestvo" id="Otchestvo" required>
 
-        <label for="Otchestvo">Отчество:</label>
-        <input type="text" name="Otchestvo" id="Otchestvo" required>
+            <label for="NomerPasport">Номер паспорта:</label>
+            <input type="text" name="NomerPasport" id="NomerPasport" maxlength="4" required>
 
-        <label for="NomerPasport">Номер паспорта:</label>
-        <input type="text" name="NomerPasport" id="NomerPasport" maxlength="4" required>
+            <label for="SeriaPasport">Серия паспорта:</label>
+            <input type="text" name="SeriaPasport" id="SeriaPasport" maxlength="6" required>
 
-        <label for="SeriaPasport">Серия паспорта:</label>
-        <input type="text" name="SeriaPasport" id="SeriaPasport" maxlength="6" required>
+            <label for="DataRozhd">Дата рождения:</label>
+            <input type="date" name="DataRozhd" id="DataRozhd" required>
 
-        <label for="DataRozhd">Дата рождения:</label>
-        <input type="date" name="DataRozhd" id="DataRozhd" required>
+            <label for="PolID">Пол:</label>
+            <select name="PolID" id="PolID" required>
+                <option value="">Выберите пол</option>
+                <?php foreach ($polList as $pol): ?>
+                    <option value="<?php echo htmlspecialchars($pol['PK_Pol']); ?>">
+                        <?php echo htmlspecialchars($pol['Nazv_Pol']); ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
 
-        <label for="PolID">Пол:</label>
-        <select name="PolID" id="PolID" required>
-            <option value="">Выберите пол</option>
-            <?php foreach ($polList as $pol): ?>
-                <option value="<?php echo htmlspecialchars($pol['PK_Pol']); ?>">
-                    <?php echo htmlspecialchars($pol['Nazv_Pol']); ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
+            <label for="TurID">Тур:</label>
+            <select name="TurID" id="TurID" required>
+                <option value="">Выберите тур</option>
+                <?php foreach ($turList as $tur): ?>
+                    <option value="<?php echo htmlspecialchars($tur['PK_Tur']); ?>">
+                        <?php echo htmlspecialchars($tur['Nazv_tur']); ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
 
-        <label for="TurID">Тур:</label>
-        <select name="TurID" id="TurID" required>
-            <option value="">Выберите тур</option>
-            <?php foreach ($turList as $tur): ?>
-                <option value="<?php echo htmlspecialchars($tur['PK_Tur']); ?>">
-                    <?php echo htmlspecialchars($tur['Nazv_tur']); ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
+            <label for="StatusID">Статус заявки:</label>
+            <select name="StatusID" id="StatusID" required>
+                <option value="">Выберите статус</option>
+                <?php foreach ($statusList as $status): ?>
+                    <option value="<?php echo htmlspecialchars($status['PK_Status']); ?>">
+                        <?php echo htmlspecialchars($status['Nazv_Status']); ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
 
-        <label for="StatusID">Статус заявки:</label>
-        <select name="StatusID" id="StatusID" required>
-            <option value="">Выберите статус</option>
-            <?php foreach ($statusList as $status): ?>
-                <option value="<?php echo htmlspecialchars($status['PK_Status']); ?>">
-                    <?php echo htmlspecialchars($status['Nazv_Status']); ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
+            <label for="KlientID">ID клиента:</label>
+            <input type="number" name="KlientID" id="KlientID" required>
 
-        <label for="KlientID">ID клиента:</label>
-        <input type="number" name="KlientID" id="KlientID" required>
+            <button type="submit">Оформить заявку</button>
+        </form>
 
-        <button type="submit">Оформить заявку</button>
-    </form>
-
-    <?php if ($bookingStatus): ?>
-        <p><?php echo $bookingStatus; ?></p>
-    <?php endif; ?>
+        <?php if ($bookingStatus): ?>
+            <p><?php echo $bookingStatus; ?></p>
+        <?php endif; ?>
+    </div>
 </body>
 </html>

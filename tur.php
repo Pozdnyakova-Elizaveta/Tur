@@ -1,41 +1,61 @@
 <?php
 require 'config.php';
-$filters=[];
+error_reporting(E_ALL & ~E_DEPRECATED & ~E_NOTICE);
+ini_set('display_errors', '0');
+// Инициализация фильтров с пустыми значениями
+$filters = [
+    'min_category_otel' => null,
+    'min_stoim' => null,
+    'max_stoim' => null,
+    'gorod' => null,
+    'start_data' => null,
+    'okonch_data' => null,
+    'colvo_turistov' => null,
+];
+
+// Получение фильтров из POST-запроса
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $filters['min_category_otel'] = isset($_POST['min_category_otel']) && $_POST['min_category_otel'] !== '' ? (int)$_POST['min_category_otel'] : null;
+    $filters['min_stoim'] = isset($_POST['min_stoim']) && $_POST['min_stoim'] !== '' ? (float)$_POST['min_stoim'] : null;
+    $filters['max_stoim'] = isset($_POST['max_stoim']) && $_POST['max_stoim'] !== '' ? (float)$_POST['max_stoim'] : null;
+    $filters['gorod'] = isset($_POST['gorod']) && $_POST['gorod'] !== '' ? $_POST['gorod'] : null;
+    $filters['start_data'] = isset($_POST['start_data']) && $_POST['start_data'] !== '' ? $_POST['start_data'] : null;
+    $filters['okonch_data'] = isset($_POST['okonch_data']) && $_POST['okonch_data'] !== '' ? $_POST['okonch_data'] : null;
+    $filters['colvo_turistov'] = isset($_POST['colvo_turistov']) && $_POST['colvo_turistov'] !== '' ? (int)$_POST['colvo_turistov'] : null;
+}
+
 function getTours($pdo, $filters) {
-    if (!empty($filters)) {
-        // Подготовка параметров для фильтрации
-        $params = [
-            ':min_category_otel' => $filters['min_category_otel'] !== null ? $filters['min_category_otel'] : null,
-            ':min_stoim' => $filters['min_stoim'] !== null ? $filters['min_stoim'] : null,
-            ':max_stoim' => $filters['max_stoim'] !== null ? $filters['max_stoim'] : null,
-            ':gorod' => $filters['gorod'] !== null ? $filters['gorod'] : null,
-            ':start_data' => $filters['start_data'] !== null && trim($filters['start_data']) !== '' ? $filters['start_data'] : null,
-            ':okonch_data' => $filters['okonch_data'] !== null && trim($filters['okonch_data']) !== '' ? $filters['okonch_data'] : null,
-            ':colvo_turistov' => $filters['colvo_turistov'] !== null ? $filters['colvo_turistov'] : null,
-        ];
+    // Формируем динамический SQL-запрос
+    $query = "SELECT * FROM filtr_tur(:min_category_otel, :min_stoim, :max_stoim, :gorod, :start_data, :okonch_data, :colvo_turistov)";
+    
+    $stmt = $pdo->prepare($query);
 
-        // Формируем SQL-запрос
-        $query = "SELECT * FROM filtr_tur(:min_category_otel, :min_stoim, :max_stoim, :gorod, :start_data, :okonch_data, :colvo_turistov)";
-        $stmt = $pdo->prepare($query);
+    // Подготовка параметров для фильтрации
+    $params = [
+        ':min_category_otel' => $filters['min_category_otel'],
+        ':min_stoim' => $filters['min_stoim'],
+        ':max_stoim' => $filters['max_stoim'],
+        ':gorod' => $filters['gorod'],
+        ':start_data' => $filters['start_data'],
+        ':okonch_data' => $filters['okonch_data'],
+        ':colvo_turistov' => $filters['colvo_turistov'],
+    ];
 
-        // Привязываем параметры
-        foreach ($params as $key => $value) {
-            if ($value !== null) {
-                $stmt->bindParam($key, $value);
-            } else {
-                // Если значение null, можно использовать PDO::PARAM_NULL
-                $stmt->bindValue($key, null, PDO::PARAM_NULL);
-            }
+    // Привязываем параметры
+    foreach ($params as $key => $value) {
+        if ($value !== null) {
+            $stmt->bindValue($key, $value);
+        } else {
+            $stmt->bindValue($key, null, PDO::PARAM_NULL);
         }
-    } else {
-        // Получаем 10 туров, не позднее текущей даты
-        $stmt = $pdo->prepare("SELECT * FROM \"Tur\" WHERE \"Date_nach\" >= CURRENT_DATE LIMIT 10");
     }
+
+    // Выполнение запроса
     $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC); 
 }
 
-// Получаем туры
+// Получаем туры в зависимости от фильтров
 $tours = getTours($pdo, $filters);
 ?>
 
@@ -144,28 +164,29 @@ $tours = getTours($pdo, $filters);
 
         <form method="POST" action="">
             <label for="min_category_otel">Минимальная категория отеля:</label>
-            <input type="number" name="min_category_otel" id="min_category_otel">
+            <input type="number" name="min_category_otel" id="min_category_otel" value="<?php echo htmlspecialchars($filters['min_category_otel'], ENT_QUOTES); ?>">
 
             <label for="min_stoim">Минимальная стоимость:</label>
-            <input type="text" name="min_stoim" id="min_stoim">
+            <input type="text" name="min_stoim" id="min_stoim" value="<?php echo htmlspecialchars($filters['min_stoim'], ENT_QUOTES); ?>">
 
             <label for="max_stoim">Максимальная стоимость:</label>
-            <input type="text" name="max_stoim" id="max_stoim">
+            <input type="text" name="max_stoim" id="max_stoim" value="<?php echo htmlspecialchars($filters['max_stoim'], ENT_QUOTES); ?>">
 
             <label for="gorod">Город:</label>
-            <input type="text" name="gorod" id="gorod">
+            <input type="text" name="gorod" id="gorod" value="<?php echo htmlspecialchars($filters['gorod'], ENT_QUOTES); ?>">
 
             <label for="start_data">Дата начала:</label>
-            <input type="date" name="start_data" id="start_data">
+            <input type="date" name="start_data" id="start_data" value="<?php echo htmlspecialchars($filters['start_data'], ENT_QUOTES); ?>">
 
             <label for="okonch_data">Дата окончания:</label>
-            <input type="date" name="okonch_data" id="okonch_data">
+            <input type="date" name="okonch_data" id="okonch_data" value="<?php echo htmlspecialchars($filters['okonch_data'], ENT_QUOTES); ?>">
 
             <label for="colvo_turistov">Количество туристов:</label>
-            <input type="number" name="colvo_turistov" id="colvo_turistov">
+            <input type="number" name="colvo_turistov" id="colvo_turistov" value="<?php echo htmlspecialchars($filters['colvo_turistov'], ENT_QUOTES); ?>">
 
             <input type="submit" value="Фильтровать">
         </form>
+        
         <h2>Список туров</h2>
         <table>
             <thead>

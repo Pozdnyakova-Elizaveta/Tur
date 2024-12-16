@@ -85,24 +85,111 @@ try {
             font-family: Arial, sans-serif;
             text-align: center;
             margin: 20px;
+            background: linear-gradient(45deg, #49a09d, #5f2c82);
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
+            margin-top: 20px;
+            overflow-x: auto;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            table-layout: fixed; 
         }
+
         th, td {
-            border: 1px solid #dddddd;
-            text-align: left;
-            padding: 8px;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            white-space: nowrap; 
+            text-overflow: ellipsis; 
+            overflow: hidden; 
         }
+
         th {
-            background-color: #f2f2f2;
+            text-align: left;
+            background-color: #55608f;
         }
+
+        tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        td {
+            word-wrap: break-word; 
+            max-width: 200px; 
+        }
+
+        h1, h2 {
+            color: #fff;
+            font-size: 32px;
+            margin-bottom: 20px;
+            font-weight: 700;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        h2 {
+            font-size: 28px;
+        }
+
+        input[type="text"], input[type="tel"], input[type="email"], input[type="date"], select {
+            padding: 10px;
+            margin: 10px;
+            width: 200px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+
         button {
             padding: 10px 20px;
             margin: 5px;
             font-size: 16px;
+            background: linear-gradient(45deg, #49a09d, #5f2c82);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: linear-gradient(45deg, #5f2c82, #49a09d);
+        }
+
+        .history-toggle {
+            background: linear-gradient(45deg, #5f2c82, #49a09d);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .history-toggle:hover {
+            background: linear-gradient(45deg, #49a09d, #5f2c82);
+        }
+
+        .hidden-history {
+            display: none;
+        }
+
+        /* кнопо4ка */
+        a {
+            text-decoration: none;
+            color: white;
+            background: linear-gradient(45deg, #5f2c82, #49a09d);
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+            display: inline-block;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        a:hover {
+            background: linear-gradient(45deg, #49a09d, #5f2c82);
         }
     </style>
 </head>
@@ -114,7 +201,6 @@ try {
     <?php elseif (!empty($successMessage)): ?>
         <p style="color: green;"><?= htmlspecialchars($successMessage) ?></p>
     <?php endif; ?>
-
     <h2>Информация о клиенте</h2>
     <form method="post">
         <input type="text" name="famil_klient" placeholder="Фамилия" value="<?= htmlspecialchars($client['Famil_Klient']) ?>" required>
@@ -138,29 +224,44 @@ try {
 
     <h2>История бронирований</h2>
 
-    <?php if (!empty($purchaseHistory)): ?>
-        <table>
-            <tr>
-                <th>Название тура</th>
-                <th>Статус</th>
-                <th>ID Путевки</th>
-                <th>Действия</th>
-            </tr>
-            <?php foreach ($purchaseHistory as $purchase): ?>
+    <button class="history-toggle" onclick="toggleHistory()">Показать/Скрыть историю</button>
+
+    <div id="history" class="hidden-history">
+        <?php if (!empty($purchaseHistory)): ?>
+            <table>
                 <tr>
-                    <td><?= htmlspecialchars($purchase['nazv_tura_klienta']) ?></td>
-                    <td><?= htmlspecialchars($purchase['status']) ?></td>
-                    <td><?= htmlspecialchars($purchase['pk_putevka']) ?></td>
-                    <td>
-                        <a href="booking_details.php?putevka_id=<?= htmlspecialchars($purchase['pk_putevka']) ?>">Подробная информация</a>
-                    </td>
+                    <th>Название тура</th>
+                    <th>Статус</th>
+                    <th>ID Путевки</th>
+                    <th>Действия</th>
                 </tr>
-            <?php endforeach; ?>
-        </table>
-    <?php else: ?>
-        <p>Нет истории бронирований.</p>
-    <?php endif; ?>
-    
+                <?php foreach ($purchaseHistory as $purchase): ?>
+                    <tr>
+                        <td><?= htmlspecialchars($purchase['nazv_tura_klienta']) ?></td>
+                        <td><?= htmlspecialchars($purchase['status']) ?></td>
+                        <td><?= htmlspecialchars($purchase['pk_putevka']) ?></td>
+                        <td>
+                            <a href="booking_details.php?putevka_id=<?= htmlspecialchars($purchase['pk_putevka']) ?>">Подробная информация</a>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </table>
+        <?php else: ?>
+            <p>Нет истории бронирований.</p>
+        <?php endif; ?>
+    </div>
+
     <p><a href="client_logout.php">Выйти</a></p>
+
+    <script>
+        function toggleHistory() {
+            var history = document.getElementById('history');
+            if (history.classList.contains('hidden-history')) {
+                history.classList.remove('hidden-history');
+            } else {
+                history.classList.add('hidden-history');
+            }
+        }
+    </script>
 </body>
 </html>

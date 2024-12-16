@@ -252,7 +252,7 @@ try {
     </div>
 
     <p><a href="client_logout.php">Выйти</a></p>
-    <p><a href="booking.php">Забронировать тур</a></p>
+    <p><a href="booking.php?client_id=<?= htmlspecialchars($client_id) ?>">Забронировать тур</a></p>
 
     <script>
         function toggleHistory() {

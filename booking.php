@@ -2,8 +2,11 @@
 require 'config.php';  
 
 $bookingStatus = '';
+$client_id = null;
 
-$client_id = intval($_GET['client_id']);
+if (isset($_GET['client_id'])) {
+    $client_id = intval($_GET['client_id']); // Получаем ID клиента из GET параметра
+}
 
 // Получаем статус по умолчанию "В обработке"
 $defaultStatusStmt = $pdo->prepare("SELECT \"PK_Status\" FROM \"Status_Zayavka\" WHERE \"Nazv_Status\" = :status");
@@ -25,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Используем $defaultStatusId для статуса заявки
     $status_id = $defaultStatusId;
 
-    $stmt = $pdo->prepare("SELECT book_tur(:familia, :imya, :otchestvo, :nomer_pasport, :seria_pasport, :data_rozhd, :pol_id, :tur_id, :status_id, :klient_id)");
+    $stmt = $pdo->prepare("SELECT book_tur(:familia, :imya, :otchestvo, :nomer_pasport, :seria_pasport, :data_rozhd, :pol_id, :tur_id, :status_id, :client_id)");
 
     $stmt->bindParam(':familia', $familia, PDO::PARAM_STR);
     $stmt->bindParam(':imya', $imya, PDO::PARAM_STR);
@@ -36,15 +39,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bindParam(':pol_id', $pol_id, PDO::PARAM_INT);
     $stmt->bindParam(':tur_id', $tur_id, PDO::PARAM_INT);
     $stmt->bindParam(':status_id', $status_id, PDO::PARAM_INT);
-    $stmt->bindParam(':klient_id', $client_id, PDO::PARAM_INT);
+    $stmt->bindParam(':client_id', $client_id, PDO::PARAM_INT); // Передача идентификатора клиента
+
     try {
         $stmt->execute();
-        
+
         // Получение ID созданной путевки
         $tripId = $pdo->lastInsertId(); // Получение последнего вставленного ID
 
         // Перенаправление на новую страницу с передачей идентификаторов
-        header("Location: selection_tickets.php?client_id=$client_id&pk_tur=$tur_id&pk_putevka=$tripId");
+        header("Location: selection_tickets.php?pk_tur=$tur_id&pk_putevka=$tripId");
         exit; // Завершаем выполнение текущего скрипта
     } catch (PDOException $e) {
         $bookingStatus = 'Ошибка: ' . $e->getMessage();
@@ -185,7 +189,8 @@ $polList = $polStmt->fetchAll(PDO::FETCH_ASSOC);
                 <?php endforeach; ?>
             </select>
 
-            <!-- Удалено поле для статуса заявки -->
+            <!-- Хранение ID клиента -->
+            <input type="hidden" name="client_id" value="<?php echo htmlspecialchars($client_id); ?>">
 
             <button type="submit">Оформить путевку</button>
         </form>

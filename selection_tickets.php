@@ -1,29 +1,34 @@
 <?php
 require 'config.php'; 
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Обработка формы бронирования билетов
     $ticketSelections = $_POST['tickets']; // Получаем выбранные билеты
-    $stmt = $pdo->prepare("INSERT INTO \"Bron_Bilet\" (\"Date_Bron\", \"PK_Status_Bilet\", \"PK_Putevka\") VALUES (CURRENT_DATE, :1, :pk_putevka)");
+
+    $pk_putevka = $_GET['pk_putevka'];
+    
+    $stmt = $pdo->prepare("INSERT INTO \"Bron_Bilet\" (\"Date_Bron\", \"PK_Status_Bilet\", \"PK_Putevka\") VALUES (CURRENT_DATE, 1, :pk_putevka)");
     $stmt->bindParam(':pk_putevka', $pk_putevka);
     $stmt->execute();
-    foreach ($ticketSelections as $ticket) {
-        $stmt = $pdo->prepare("UPDATE \"Bilet\" SET \"PK_Bron_Bilet\" = (SELECT \"PK_Bron_Bilet\" from \"Bron_Bilet\" 
-        WHERE \"PK_Putevka\"=:pk_putevka LIMIT 1) WHERE \"PK_Bilet\" = :pk_bilet");
-                // Предполагаем, что вы получаете необходимые данные из $ticket
-        $stmt->bindParam(':pk_bilet', $ticket['pk_bilet']);
-        $stmt->bindParam(':pk_putevka', $pk_putevka);
 
+    foreach ($ticketSelections as $ticket) {
+        $data = json_decode($ticket, true);
+        $stmt = $pdo->prepare("UPDATE \"Bilet\" SET \"PK_Bron_Bilet\" = (SELECT \"PK_Bron_Bilet\" FROM \"Bron_Bilet\" 
+        WHERE \"PK_Putevka\" = :pk_putevka LIMIT 1) WHERE \"PK_Bilet\" = :pk_bilet");
+        // Предполагаем, что вы получаете необходимые данные из $ticket
+        $stmt->bindParam(':pk_bilet', $data['pk_bilet']);
+        $stmt->bindParam(':pk_putevka', $pk_putevka);
         $stmt->execute();
     }
+    $pk_tur = $_GET['pk_tur'];
 
-    header("Location: selection_hotel.php?client_id=$client_id&pk_tur=$pk_tur&pk_putevka=$pk_putevka");
+    header("Location: selection_hotel.php?pk_tur=$pk_tur&pk_putevka=$pk_putevka");
     exit();
 }
 
 // Получение id путевки и тура
 $pk_putevka = $_GET['pk_putevka'];
 $pk_tur = $_GET['pk_tur'];
-$client_id = $_GET['client_id'];
 
 // Получение точек тура
 $stmt = $pdo->prepare("SELECT * FROM \"Tochka_Tur\" WHERE \"PK_Tur\" = :pk_tur");
@@ -48,6 +53,7 @@ foreach ($points as $point) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Бронирование билетов</title>
     <style>
+        /* Стили остаются прежними */
         html, body {
             height: 100%;
             margin: 0;
@@ -138,6 +144,7 @@ foreach ($points as $point) {
             width: 18%;
             margin-left: 2%;
         }
+
         .actions {
             display: flex;
             justify-content: space-between;
@@ -147,7 +154,7 @@ foreach ($points as $point) {
 <body>
     <div class="container">
         <h1>Бронирование билетов для тура</h1>
-        <form action="booking.php?pk_putevka=<?= $pk_putevka ?>&pk_tur=<?= $pk_tur ?>" method="post">
+        <form action="selection_tickets.php?pk_putevka=<?= $pk_putevka ?>&pk_tur=<?= $pk_tur ?>&client_id=<?= $client_id ?>" method="post">
             <?php foreach ($points as $point): ?>
                 <?php if (isset($flights[$point['PK_Tochka_Tur']])): ?>
                     <div class="form-group">
@@ -163,7 +170,6 @@ foreach ($points as $point) {
                     </div>
                 <?php endif; ?>
             <?php endforeach; ?>
-
             <button type="submit">Забронировать билеты</button>
         </form>
     </div>

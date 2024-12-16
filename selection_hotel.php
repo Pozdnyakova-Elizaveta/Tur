@@ -2,7 +2,6 @@
 require 'config.php'; 
 $pk_tur = $_GET['pk_tur'];
 $pk_putevka = $_GET['pk_putevka'];
-$client_id = $_GET['client_id'];
 $availableRooms = [];
 $pointsOfTour = [];
 $checkIn = null;
@@ -42,62 +41,91 @@ foreach ($pointsOfTour as $point) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $nomerSelections = $_POST['rooms']; // Получаем выбранные билеты
-    foreach ($nomerSelections as $nomer) {
-        $stmt = $pdo->prepare("SELECT r.\"Data_Vrem_Pribit\" FROM \"Reis\" r JOIN \"Tochka_Tur\" tt
-    ON r.\"PK_Reis\"= tt.\"PK_Reis\" WHERE tt.\"PK_Tochka_Tur\" = :pk_tochka");
-    $stmt->bindParam(':pk_tochka', $point['PK_Tochka_Tur']);
-    $stmt->execute();
-    $checkInData = $stmt->fetch(PDO::FETCH_ASSOC);
-    $checkIn = $checkInData['Data_Vrem_Pribit'];
-    $stmt = $pdo->prepare("SELECT min(r.\"Data_Vrem_Otpr\") as min_otpr FROM \"Reis\" r 
-    JOIN \"Tochka_Tur\" tt ON r.\"PK_Reis\"= tt.\"PK_Reis\" JOIN \"Transport_usel\" tu ON
-                    	r.\"PK_Transport_Usel_Otpr\" = tu.\"PK_Transport_Usel\"
-                    	WHERE tt.\"PK_Tur\" = :tur_id AND r.\"Data_Vrem_Otpr\" > :data_zaezd AND tu.\"PK_Gorod\" =
-                    	(SELECT tt.\"PK_Gorod\" FROM \"Tochka_Tur\" tt WHERE tt.\"PK_Tochka_Tur\" = :pk_tochka)");
-                        
-    $stmt->bindParam(':tur_id', $pk_tur);
-    $stmt->bindParam(':data_zaezd', $checkIn);
-    $stmt->bindParam(':pk_tochka', $point['PK_Tochka_Tur']);
-    $stmt->execute();
-    $checkOutData = $stmt->fetch(PDO::FETCH_ASSOC);
-    $checkOut = $checkOutData['min_otpr'];
-    $stmt = $pdo->prepare("SELECT o.\PK_Otel\" FROM \"Otel\" o JOIN \"Nomer\" n
-    ON o.\"PK_Otel\"= n.\"PK_Otel\" WHERE n.\"Nomer_Komnat\" = :nomer");
-    $stmt->bindParam(':nomer', $nomer['Nomer_Komnat']);
-    $stmt->execute();
-    $otel = $stmt->fetch(PDO::FETCH_ASSOC);
+    $nomerSelections = $_POST['rooms']; 
+    // Предполагаем, что $pointsOfTour уже определен где-то в вашем коде.
+    foreach ($pointsOfTour as $point) {
+        foreach ($nomerSelections as $nomer) {
+            $data = json_decode($nomer, true);
 
-        $stmt = $pdo->prepare("INSERT INTO \"Bron_Nomer\" (\"PK_Nomer\", \"PK_Otel\", \"Date_Zaezd\", \"Date_Viezda\" RETURNING \"PK_Bron\")
-        VALUES (:nomer, :otel, :zaezd, :viezd)");
-                // Предполагаем, что вы получаете необходимые данные из $ticket
-        $stmt->bindParam(':nomer', $nomer['Nomer_Komnat']);
-        $stmt->bindParam(':otel', $otel);
-        $stmt->bindParam(':zaezd', $checkIn);
-        $stmt->bindParam(':viezd', $checkOut);
-        $stmt->execute();
-        $key = $stmt->fetch(PDO::FETCH_ASSOC);
-        $stmt = $pdo->prepare("INSERT INTO \"Putevka_Bron_Nomer\" (\"PK_Putevka\", \"PK_Bron\", \"PK_Nomer\", \"PK_Otel\") 
-        VALUES (:putevka, :bron, :nomer, :otel)");
-         $stmt->bindParam(':nomer', $nomer['Nomer_Komnat']);
-         $stmt->bindParam(':otel', $otel);
-         $stmt->bindParam(':bron', $key);
-         $stmt->bindParam(':putevka', $pk_putevka);
-         $stmt->execute();
+            // Получение данных о времени прибытия
+            $stmt = $pdo->prepare("SELECT r.\"Data_Vrem_Pribit\" FROM \"Reis\" r JOIN \"Tochka_Tur\" tt
+                ON r.\"PK_Reis\"= tt.\"PK_Reis\" WHERE tt.\"PK_Tochka_Tur\" = :pk_tochka");
+            $stmt->bindParam(':pk_tochka', $point['PK_Tochka_Tur']);
+            $stmt->execute();
+            $checkInData = $stmt->fetch(PDO::FETCH_ASSOC);
+            $checkIn = $checkInData['Data_Vrem_Pribit'];
+
+            // Получение данных о времени отправления
+            $stmt = $pdo->prepare("SELECT min(r.\"Data_Vrem_Otpr\") as min_otpr FROM \"Reis\" r 
+                JOIN \"Tochka_Tur\" tt ON r.\"PK_Reis\"= tt.\"PK_Reis\" JOIN \"Transport_usel\" tu ON
+                r.\"PK_Transport_Usel_Otpr\" = tu.\"PK_Transport_Usel\"
+                WHERE tt.\"PK_Tur\" = :tur_id AND r.\"Data_Vrem_Otpr\" > :data_zaezd AND tu.\"PK_Gorod\" =
+                (SELECT tt.\"PK_Gorod\" FROM \"Tochka_Tur\" tt WHERE tt.\"PK_Tochka_Tur\" = :pk_tochka)");
+            $stmt->bindParam(':tur_id', $pk_tur);
+            $stmt->bindParam(':data_zaezd', $checkIn);
+            $stmt->bindParam(':pk_tochka', $point['PK_Tochka_Tur']);
+            $stmt->execute();
+            $checkOutData = $stmt->fetch(PDO::FETCH_ASSOC);
+            $checkOut = $checkOutData['min_otpr'];
+
+            // Получение данных об отеле
+            $stmt = $pdo->prepare("SELECT o.\"PK_Otel\" FROM \"Otel\" o JOIN \"Nomer\" n
+                ON o.\"PK_Otel\"= n.\"PK_Otel\" WHERE n.\"Nomer_Komnat\" = :nomer");
+            $stmt->bindParam(':nomer', $data['nomer_komnat']);
+            $stmt->execute();
+            $otel = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$otel) {
+                // Обработка случая, когда отель не найден
+                echo "Ошибка: Отель не найден для номера: " . $data['nomer_komnat'];
+                continue; // Пропустить итерацию
+            }
+            $stmt = $pdo->prepare("SELECT \"PK_Nomer\" FROM \"Nomer\" WHERE \"Nomer_Komnat\" = :nomer");
+            $stmt->bindParam(':nomer', $data['nomer_komnat']);
+            $stmt->execute();
+            $nomer_k = $stmt->fetch(PDO::FETCH_ASSOC);
+            // Вставка данных о бронировании
+            if ($checkOut){ $stmt = $pdo->prepare("INSERT INTO \"Bron_Nomer\" (\"PK_Nomer\", \"PK_Otel\", \"Date_Zaezd\", \"Date_Viezda\")
+                VALUES (:nomer, :otel, :zaezd, :viezd) RETURNING \"PK_Bron\"");
+            $stmt->bindParam(':nomer', $nomer_k['PK_Nomer']);
+            $stmt->bindParam(':otel', $otel['PK_Otel']);
+            $stmt->bindParam(':zaezd', $checkIn);
+            $stmt->bindParam(':viezd', $checkOut);
+            $stmt->execute();
+            $key = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$key) {
+                // Обработка случая, когда бронирование не создано
+                echo "Ошибка: Бронирование не создано для номера: " . $data['nomer_komnat'];
+                continue; // Пропустить итерацию
+            }
+
+            // Вставка данных о путевке
+            $stmt = $pdo->prepare("INSERT INTO \"Putevka_Bron_Nomer\" (\"PK_Putevka\", \"PK_Bron\", \"PK_Nomer\", \"PK_Otel\") 
+                VALUES (:putevka, :bron, :nomer, :otel)");
+            $stmt->bindParam(':nomer', $nomer_k['PK_Nomer']);
+            $stmt->bindParam(':otel', $otel['PK_Otel']);
+            $stmt->bindParam(':bron', $key['PK_Bron']);
+            $stmt->bindParam(':putevka', $pk_putevka);
+            $stmt->execute();
+        }
+        }
     }
-    
-    
-    $stmt = $pdo->prepare(" INSERT INTO \"Rezerv\" (Status_Rezerv, PK_Meropriyat, PK_Putevka)
-    SELECT 'Забронировано', \"PK_Meropriyat\", :pk_putevka
-    FROM \"Meropriyat\"
-    WHERE \"PK_Tur\" = :pk_tur");
+
+    // Вставка данных о резервировании
+    $stmt = $pdo->prepare("INSERT INTO \"Rezerv\" (\"Status_Rezerv\", \"PK_Meropriyat\", \"PK_Putevka\")
+        SELECT 'Забронировано', \"PK_Meropriyat\", :pk_putevka
+        FROM \"Meropriyat\"
+        WHERE \"PK_Tur\" = :pk_tur");
     $stmt->bindParam(':pk_tur', $pk_tur);
     $stmt->bindParam(':pk_putevka', $pk_putevka);
     $stmt->execute();
-    header("Location: client_dashboard.php?pk_tur=$pk_tur&pk_putevka=$pk_putevka");
+
+    header("Location: client_dashboard.php");
     exit();
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="ru">
@@ -195,7 +223,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <body>
     <div class="container">
         <h1>Бронирование Номеров Отелей</h1>
-        <form action="selection_tickets.php?pk_putevka=<?= $pk_putevka ?>&pk_tur=<?= $pk_tur ?>" method="post">
+        <form action="selection_hotel.php?pk_putevka=<?= $pk_putevka ?>&pk_tur=<?= $pk_tur ?>" method="post">
         <?php foreach ($pointsOfTour as $point): ?>
         <?php if (isset($availableRooms[$point['PK_Tochka_Tur']])): ?>
             <div class="form-group">

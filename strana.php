@@ -69,6 +69,7 @@ $strany = $stmt->fetchAll();
             border-radius: 5px;
             border: none;
         }
+
         input[type="date"], select {
             background-color: rgba(255, 255, 255, 0.3);
             color: #fff;
@@ -134,12 +135,29 @@ $strany = $stmt->fetchAll();
             align-items: center;
         }
 
+        select {
+            background-color: rgba(255, 255, 255, 0.8); 
+            color: #000; 
+            padding: 10px;
+            border-radius: 5px;
+            width: 90%;
+            border: none;
+            margin-top: 5px;
+        }
+
+        option {
+            background-color: #f5f5f5; 
+            color: #000; 
+        }
+
+        option:hover {
+            background-color: #ddd; 
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Страны</h1>
-
         <h2>Добавить страну</h2>
         <form method="POST">
             <input type="text" name="Nazv_Strana" required placeholder="Название страны">

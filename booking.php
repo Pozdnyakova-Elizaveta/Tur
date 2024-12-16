@@ -3,6 +3,15 @@ require 'config.php';
 
 $bookingStatus = '';
 
+$client_id = intval($_GET['client_id']);
+
+// Получаем статус по умолчанию "В обработке"
+$defaultStatusStmt = $pdo->prepare("SELECT \"PK_Status\" FROM \"Status_Zayavka\" WHERE \"Nazv_Status\" = :status");
+$defaultStatus = "В обработке";
+$defaultStatusStmt->bindParam(':status', $defaultStatus, PDO::PARAM_STR);
+$defaultStatusStmt->execute();
+$defaultStatusId = $defaultStatusStmt->fetchColumn(); // получение первого столбца из результата
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $familia = $_POST['Familia'];
     $imya = $_POST['Imya'];
@@ -12,8 +21,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data_rozhd = $_POST['DataRozhd'];
     $pol_id = $_POST['PolID'];
     $tur_id = $_POST['TurID'];
-    $status_id = $_POST['StatusID'];
-    $klient_id = $_POST['KlientID'];
+    
+    // Используем $defaultStatusId для статуса заявки
+    $status_id = $defaultStatusId;
 
     $stmt = $pdo->prepare("SELECT book_tur(:familia, :imya, :otchestvo, :nomer_pasport, :seria_pasport, :data_rozhd, :pol_id, :tur_id, :status_id, :klient_id)");
 
@@ -26,11 +36,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bindParam(':pol_id', $pol_id, PDO::PARAM_INT);
     $stmt->bindParam(':tur_id', $tur_id, PDO::PARAM_INT);
     $stmt->bindParam(':status_id', $status_id, PDO::PARAM_INT);
-    $stmt->bindParam(':klient_id', $klient_id, PDO::PARAM_INT);
-
+    $stmt->bindParam(':klient_id', $client_id, PDO::PARAM_INT);
     try {
         $stmt->execute();
-        $bookingStatus = 'Заявка успешно оформлена!';
+        
+        // Получение ID созданной путевки
+        $tripId = $pdo->lastInsertId(); // Получение последнего вставленного ID
+
+        // Перенаправление на новую страницу с передачей идентификаторов
+        header("Location: selection_tickets.php?client_id=$client_id&pk_tur=$tur_id&pk_putevka=$tripId");
+        exit; // Завершаем выполнение текущего скрипта
     } catch (PDOException $e) {
         $bookingStatus = 'Ошибка: ' . $e->getMessage();
     }
@@ -38,9 +53,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $turStmt = $pdo->query("SELECT \"PK_Tur\", \"Nazv_tur\" FROM \"Tur\"");
 $turList = $turStmt->fetchAll(PDO::FETCH_ASSOC);
-
-$statusStmt = $pdo->query("SELECT \"PK_Status\", \"Nazv_Status\" FROM \"Status_Zayavka\"");
-$statusList = $statusStmt->fetchAll(PDO::FETCH_ASSOC);
 
 $polStmt = $pdo->query("SELECT \"PK_Pol\", \"Nazv_Pol\" FROM \"Pol\"");
 $polList = $polStmt->fetchAll(PDO::FETCH_ASSOC);
@@ -51,7 +63,7 @@ $polList = $polStmt->fetchAll(PDO::FETCH_ASSOC);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Оформление заявки</title>
+    <title>Оформление путевки</title>
     <style>
         html, body {
             height: 100%;
@@ -133,7 +145,7 @@ $polList = $polStmt->fetchAll(PDO::FETCH_ASSOC);
 </head>
 <body>
     <div class="container">
-        <h1>Оформление заявки на тур</h1>
+        <h1>Оформление путевки</h1>
 
         <form method="POST">
             <label for="Familia">Фамилия:</label>
@@ -173,20 +185,9 @@ $polList = $polStmt->fetchAll(PDO::FETCH_ASSOC);
                 <?php endforeach; ?>
             </select>
 
-            <label for="StatusID">Статус заявки:</label>
-            <select name="StatusID" id="StatusID" required>
-                <option value="">Выберите статус</option>
-                <?php foreach ($statusList as $status): ?>
-                    <option value="<?php echo htmlspecialchars($status['PK_Status']); ?>">
-                        <?php echo htmlspecialchars($status['Nazv_Status']); ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
+            <!-- Удалено поле для статуса заявки -->
 
-            <label for="KlientID">ID клиента:</label>
-            <input type="number" name="KlientID" id="KlientID" required>
-
-            <button type="submit">Оформить заявку</button>
+            <button type="submit">Оформить путевку</button>
         </form>
 
         <?php if ($bookingStatus): ?>

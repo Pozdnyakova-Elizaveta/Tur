@@ -178,12 +178,12 @@ $kompaniya = $stmt->fetchAll();
         <textarea id="opisanie_tur" name="opisanie_tur" required></textarea><br><br>
 
         <label for="pk_kompaniya">Компания:</label>
-        <select name="kompaniya[]">
+        <select name="pk_kompaniya">
                     <?php foreach ($kompaniya as $k): ?>
                         <option value="<?= $k['PK_Kompaniya'] ?>"><?= htmlspecialchars($k['Nazv_Kompaniya']) ?></option>
                     <?php endforeach; ?>
-                </select><br><br>
-
+                </><br><br>
+                </select>
         <div id="pointsContainer">
             <h3>Точки тура</h3>
             <div class="point">

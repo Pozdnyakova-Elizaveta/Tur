@@ -205,6 +205,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit'])) {
             <li><a href="populardestinations.php" style="color: #fff;">Анализ популярных направлений</a></li>
             <li><a href="tour_statistics.php" style="color: #fff;">Проданные туры</a></li>
             <li><a href="sotr_register.php" style="color: #fff;">Регистрация нового сотрудника</a></li>
+            <li><a href="strana.php" style="color: #fff;">Редактирование данных о маршрутах</a></li>
+            <li><a href="create_tur.php" style="color: #fff;">Создание нового тура</a></li>
         </ul>
         
         <p><a href="logout.php" style="color: #fff;">Выйти</a></p>

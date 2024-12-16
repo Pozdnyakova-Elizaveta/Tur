@@ -1,8 +1,8 @@
 <?php
 session_start();
 
-if (isset($_SESSION['sotrudnik_id'])) {
-    // Уничтожаем сессию
+// Уничтожаем сессию, если она существует
+if (isset($_SESSION['client_id'])) {
     session_unset();
     session_destroy();
 }
@@ -67,7 +67,7 @@ if (isset($_SESSION['sotrudnik_id'])) {
         <h1>Вы вышли из своего аккаунта</h1>
         <p>Спасибо за использование нашего сервиса!</p>
         <button onclick="window.location.href='tur.php'">На главную страницу</button>
-        <button onclick="window.location.href='sotr_auth.php'">Войти заново</button>
+        <button onclick="window.location.href='client_auth.php'">Войти заново</button>
     </div>
 </body>
 </html>

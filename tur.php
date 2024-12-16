@@ -71,7 +71,6 @@ $tours = getTours($pdo, $filters);
             padding: 0;
             background: linear-gradient(45deg, #49a09d, #5f2c82); 
         }
-
         .container {
             width: 80%;
             margin: 50px auto;
@@ -80,21 +79,34 @@ $tours = getTours($pdo, $filters);
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
         }
-
+        .auth-buttons {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+        }
+        .auth-buttons button {
+            background-color: #49a09d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .auth-buttons button:hover {
+            background-color: #5f2c82;
+        }
         h1, h2 {
             text-align: center;
             color: #333;
         }
-
         form {
             margin-bottom: 20px;
         }
-
         label {
             display: block;
             margin-top: 10px;
         }
-
         input[type="text"], input[type="number"], input[type="date"] {
             width: 100%;
             padding: 8px;
@@ -102,7 +114,6 @@ $tours = getTours($pdo, $filters);
             border-radius: 5px;
             border: 1px solid #ccc;
         }
-
         input[type="submit"] {
             margin-top: 10px;
             background-color: #49a09d;
@@ -112,11 +123,9 @@ $tours = getTours($pdo, $filters);
             border-radius: 5px;
             cursor: pointer;
         }
-
         input[type="submit"]:hover {
             background-color: #5f2c82;
         }
-
         table {
             width: 100%;
             margin-top: 20px;
@@ -126,7 +135,6 @@ $tours = getTours($pdo, $filters);
             table-layout: fixed;
             overflow-x: auto;
         }
-
         th, td {
             padding: 8px;
             text-align: left;
@@ -134,38 +142,34 @@ $tours = getTours($pdo, $filters);
             word-wrap: break-word;
             font-size: 14px;
         }
-
         th {
             background-color: #f2f2f2;
             font-weight: bold;
         }
-
         tr:hover {
             background-color: #f9f9f9;
         }
-
         td:nth-child(1) {
             width: 40%;
         }
-
         td:nth-child(2), td:nth-child(3) {
             width: 30%;
         }
-
         td:nth-child(2), td:nth-child(3) {
             text-align: center;
         }
     </style>
 </head>
 <body>
-
+    <div class="auth-buttons">
+        <button onclick="window.location.href='client_auth.php'">Авторизация клиента</button>
+        <button onclick="window.location.href='sotr_auth.php'">Авторизация сотрудника</button>
+    </div>
     <div class="container">
         <h1>Туры</h1>
-
         <form method="POST" action="">
             <label for="min_category_otel">Минимальная категория отеля:</label>
             <input type="number" name="min_category_otel" id="min_category_otel" value="<?php echo htmlspecialchars($filters['min_category_otel'], ENT_QUOTES); ?>">
-
             <label for="min_stoim">Минимальная стоимость:</label>
             <input type="text" name="min_stoim" id="min_stoim" value="<?php echo htmlspecialchars($filters['min_stoim'], ENT_QUOTES); ?>">
 
@@ -186,7 +190,6 @@ $tours = getTours($pdo, $filters);
 
             <input type="submit" value="Фильтровать">
         </form>
-        
         <h2>Список туров</h2>
         <table>
             <thead>
@@ -219,6 +222,5 @@ $tours = getTours($pdo, $filters);
             </tbody>
         </table>
     </div>
-
 </body>
 </html>

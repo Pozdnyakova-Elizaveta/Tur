@@ -10,6 +10,7 @@ $stmt = $pdo->prepare("SELECT * FROM \"Tochka_Tur\" WHERE \"PK_Tur\" = :pk_tur")
 $stmt->bindParam(':pk_tur', $pk_tur);
 $stmt->execute();
 $pointsOfTour = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$message = "";
 
 foreach ($pointsOfTour as $point) {
     $stmt = $pdo->prepare("SELECT r.\"Data_Vrem_Pribit\" FROM \"Reis\" r JOIN \"Tochka_Tur\" tt
@@ -41,8 +42,8 @@ foreach ($pointsOfTour as $point) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    try{
     $nomerSelections = $_POST['rooms']; 
-    // Предполагаем, что $pointsOfTour уже определен где-то в вашем коде.
     foreach ($pointsOfTour as $point) {
         foreach ($nomerSelections as $nomer) {
             $data = json_decode($nomer, true);
@@ -78,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (!$otel) {
                 // Обработка случая, когда отель не найден
                 echo "Ошибка: Отель не найден для номера: " . $data['nomer_komnat'];
-                continue; // Пропустить итерацию
+                continue;
             }
             $stmt = $pdo->prepare("SELECT \"PK_Nomer\" FROM \"Nomer\" WHERE \"Nomer_Komnat\" = :nomer");
             $stmt->bindParam(':nomer', $data['nomer_komnat']);
@@ -97,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (!$key) {
                 // Обработка случая, когда бронирование не создано
                 echo "Ошибка: Бронирование не создано для номера: " . $data['nomer_komnat'];
-                continue; // Пропустить итерацию
+                continue;
             }
 
             // Вставка данных о путевке
@@ -123,6 +124,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     header("Location: client_dashboard.php");
     exit();
+} catch (PDOException $e) {
+    $message = 'Ошибка бронирования номера';
+}
 }
 ?>
 
@@ -139,7 +143,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             margin: 0;
             font-family: sans-serif;
         }
-
+        .message {
+            color: darkred;
+            text-align: center;
+            margin-bottom: 15px;
+        }
         body {
             background: linear-gradient(45deg, #49a09d, #5f2c82);
             font-weight: 100;
@@ -222,13 +230,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 <body>
     <div class="container">
+    <a href="javascript:history.back()" class="back-button">Назад</a>
         <h1>Бронирование Номеров Отелей</h1>
+        <?php if ($message): ?>
+            <p class="message"> <?= htmlspecialchars($message) ?> </p>
+    <?php endif; ?>
         <form action="selection_hotel.php?pk_putevka=<?= $pk_putevka ?>&pk_tur=<?= $pk_tur ?>" method="post">
         <?php foreach ($pointsOfTour as $point): ?>
         <?php if (isset($availableRooms[$point['PK_Tochka_Tur']])): ?>
             <div class="form-group">
+            <?php if (!empty($availableRooms[$point['PK_Tochka_Tur']])):?>
                 <label for="room_<?= $point['PK_Tochka_Tur'] ?>">Номер в <?= htmlspecialchars($point['Nazvanie_Tochka_Tur']) ?>:</label>
-                <select name="rooms[<?= $point['PK_Tochka_Tur'] ?>]" id="room_<?= $point['PK_Tochka_Tur'] ?>">
+                <select name="rooms[<?= $point['PK_Tochka_Tur'] ?>]" id="room_<?= $point['PK_Tochka_Tur'] ?>" required>
                     <option value="">-- Выберите номер --</option>
                     <?php foreach ($availableRooms[$point['PK_Tochka_Tur']] as $room): ?>
                         <option value='{"nomer_komnat": "<?= htmlspecialchars($room['Nomer_Komnat']) ?>", "tsena": "<?= htmlspecialchars($room['Tsena']) ?>", "opisanie": "<?= htmlspecialchars($room['Opisanie_Tip_Nomer']) ?>" }'>
@@ -236,6 +249,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         </option>
                     <?php endforeach; ?>
                 </select>
+                <?php endif; ?>
             </div>
         <?php endif; ?>
     <?php endforeach; ?>

@@ -1,19 +1,17 @@
 <?php
-require 'config.php'; // Подключение к базе данных
+require 'config.php';
 
 $message = '';
 
-// Получение данных о поле
 $genders = [];
 try {
     $stmt = $pdo->query("SELECT \"PK_Pol\", \"Nazv_Pol\" FROM \"Pol\"");
     $genders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
-    $message = 'Ошибка получения пола: ' . $e->getMessage();
+    $message = 'Ошибка получения пола';
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Registration or login
     if (isset($_POST['register'])) {
         // Регистрация
         $familia = trim($_POST['familia']);
@@ -30,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->execute([$familia, $imya, $otchestvo, $data_rozhd, $nomer_tel, $pochta, $pk_pol]);
                 $message = 'Регистрация успешна!';
             } catch (PDOException $e) {
-                $message = 'Ошибка регистрации: ' . $e->getMessage();
+                $message = 'Ошибка регистрации';
             }
         } else {
             $message = 'Пожалуйста, заполните все поля корректно.';
@@ -47,16 +45,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $client = $stmt->fetch(PDO::FETCH_ASSOC);
 
                 if ($client) {
-                    // Здесь можно сохранить информацию о клиенте в сессии
+                    // Сохранение информации о клиенте в сессии
                     session_start();
                     $_SESSION['client_id'] = $client['PK_Klient'];
-                    header("Location: client_dashboard.php"); // перенаправление на страницу после входа
+                    header("Location: client_dashboard.php"); // перенаправление в личный кабинет
                     exit;
                 } else {
                     $message = 'Клиент не найден.';
                 }
             } catch (PDOException $e) {
-                $message = 'Ошибка авторизации: ' . $e->getMessage();
+                $message = 'Ошибка авторизации';
             }
         } else {
             $message = 'Пожалуйста, введите адрес электронной почты.';
@@ -139,6 +137,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
     <div class="container">
+    <a href="javascript:history.back()" class="back-button">Назад</a>
         <h1>Регистрация и Авторизация</h1>
         <?php if ($message): ?>
             <p class="message"> <?= htmlspecialchars($message) ?> </p>

@@ -1,5 +1,5 @@
 <?php
-require 'config.php'; // подключение к базе данных
+require 'config.php';
 
 $message = '';
 
@@ -15,10 +15,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
                 if ($user) {
-                    // Здесь можно сохранить информацию о пользователе в сессии
+                    // Сохранение информации о пользователе в сессии
                     session_start();
                     $_SESSION['user_id'] = $user['PK_Sotrudnik'];
-                    // Перенаправление на защищенную страницу
+                    // Перенаправление в личный кабинет
                     header("Location: dashboard.php");
                     exit;
                 } else {
@@ -119,6 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
     <div class="container">
+    <a href="javascript:history.back()" class="back-button">Назад</a>
         <h1>Авторизация Сотрудника</h1>
 
         <?php if (!empty($message)): ?>

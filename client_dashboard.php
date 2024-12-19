@@ -1,6 +1,6 @@
 <?php
 session_start();
-require 'config.php'; // Подключение к базе данных
+require 'config.php';
 
 if (!isset($_SESSION['client_id'])) {
     header("Location: client_auth.php"); // Перенаправление на страницу входа, если пользователь не авторизован
@@ -194,6 +194,7 @@ try {
     </style>
 </head>
 <body>
+<a href="javascript:history.back()" class="back-button">Назад</a>
     <h1>Личный Кабинет Клиента</h1>
 
     <?php if (!empty($errorMessage)): ?>

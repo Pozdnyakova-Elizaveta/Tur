@@ -25,7 +25,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 function getTours($pdo, $filters) {
-    // Формируем динамический SQL-запрос
     $query = "SELECT * FROM filtr_tur(:min_category_otel, :min_stoim, :max_stoim, :gorod, :start_data, :okonch_data, :colvo_turistov)";
     
     $stmt = $pdo->prepare($query);
@@ -41,7 +40,6 @@ function getTours($pdo, $filters) {
         ':colvo_turistov' => $filters['colvo_turistov'],
     ];
 
-    // Привязываем параметры
     foreach ($params as $key => $value) {
         if ($value !== null) {
             $stmt->bindValue($key, $value);
@@ -49,8 +47,6 @@ function getTours($pdo, $filters) {
             $stmt->bindValue($key, null, PDO::PARAM_NULL);
         }
     }
-
-    // Выполнение запроса
     $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC); 
 }

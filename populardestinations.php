@@ -4,7 +4,7 @@ require 'config.php';
 // Количество записей на странице
 $recordsPerPage = 10;
 
-// Получаем номер текущей страницы из параметра GET (по умолчанию 1)
+// Получаем номер текущей страницы из параметра GET
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 
 // Вычисляем OFFSET для SQL-запроса
@@ -141,6 +141,7 @@ $totalPages = ceil($totalRecords / $recordsPerPage);
 </head>
 <body>
     <div class="container">
+    <a href="javascript:history.back()" class="back-button">Назад</a>
         <h1>Популярные направления</h1>
         <h2>Статистика по популярным направлениям</h2>
         

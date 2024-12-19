@@ -1,29 +1,38 @@
 <?php
 require 'config.php';
-
-// Обработка операций CRUD
+$message="";
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['add'])) {
+        try{
         $nazv_strana = $_POST['Nazv_Strana'];
         $stmt = $pdo->prepare("INSERT INTO \"Strana\" (\"Nazv_Strana\") VALUES (:nazv_strana)");
         $stmt->execute(['nazv_strana' => $nazv_strana]);
+    }catch(PDOException $e) {
+        $message = 'Ошибка при добавлении страны';
     }
-
+    }
     if (isset($_POST['update'])) {
+        try{
         $pk_strana = $_POST['PK_Strana'];
         $nazv_strana = $_POST['Nazv_Strana'];
         $stmt = $pdo->prepare("UPDATE \"Strana\" SET \"Nazv_Strana\" = :nazv_strana WHERE \"PK_Strana\" = :pk_strana");
         $stmt->execute(['nazv_strana' => $nazv_strana, 'pk_strana' => $pk_strana]);
+    }catch(PDOException $e) {
+        $message = 'Ошибка обновления данных о стране';
+    }
     }
 
     if (isset($_POST['delete'])) {
+        try{
         $pk_strana = $_POST['PK_Strana'];
         $stmt = $pdo->prepare("DELETE FROM \"Strana\" WHERE \"PK_Strana\" = :pk_strana");
         $stmt->execute(['pk_strana' => $pk_strana]);
+    }catch(PDOException $e) {
+        $message = 'Ошибка - нельзя удалить запись о стране';
+    }
     }
 }
 
-// Извлечение данных
 $stmt = $pdo->query("SELECT * FROM \"Strana\"");
 $strany = $stmt->fetchAll();
 ?>
@@ -34,6 +43,11 @@ $strany = $stmt->fetchAll();
     <meta charset="UTF-8">
     <title>Страны</title>
     <style>
+        .message {
+            color: darkred;
+            text-align: center;
+            margin-bottom: 15px;
+        }
         html, body {
             height: 100%;
             margin: 0;
@@ -157,7 +171,11 @@ $strany = $stmt->fetchAll();
 </head>
 <body>
     <div class="container">
+    <a href="javascript:history.back()" class="back-button">Назад</a>
         <h1>Страны</h1>
+        <?php if ($message): ?>
+            <p class="message"> <?= htmlspecialchars($message) ?> </p>
+    <?php endif; ?>
         <h2>Добавить страну</h2>
         <form method="POST">
             <input type="text" name="Nazv_Strana" required placeholder="Название страны">

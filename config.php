@@ -1,12 +1,12 @@
 <?php
 // config.php
 
-$host = 'localhost'; // Адрес сервера базы данных
-$db   = 'tourism'; // Название вашей базы данных
-$user = 'postgres'; // Имя пользователя базы данных
-$pass = 'Postgres'; // Пароль пользователя базы данных
+$host = 'localhost';
+$db   = 'tourism';
+$user = 'postgres';
+$pass = 'Postgres';
 
-// Настройка DSN (Data Source Name)
+
 $dsn = "pgsql:host=$host;dbname=$db";
 $options = [
     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,

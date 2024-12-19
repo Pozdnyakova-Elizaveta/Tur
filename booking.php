@@ -5,7 +5,7 @@ $bookingStatus = '';
 $client_id = null;
 
 if (isset($_GET['client_id'])) {
-    $client_id = intval($_GET['client_id']); // Получаем ID клиента из GET параметра
+    $client_id = intval($_GET['client_id']);
 }
 
 // Получаем статус по умолчанию "В обработке"
@@ -44,12 +44,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $stmt->execute();
 
-        // Получение ID созданной путевки
         $tripId = $pdo->lastInsertId(); // Получение последнего вставленного ID
 
         // Перенаправление на новую страницу с передачей идентификаторов
         header("Location: selection_tickets.php?pk_tur=$tur_id&pk_putevka=$tripId");
-        exit; // Завершаем выполнение текущего скрипта
+        exit;
     } catch (PDOException $e) {
         $bookingStatus = 'Ошибка: ' . $e->getMessage();
     }
@@ -149,6 +148,7 @@ $polList = $polStmt->fetchAll(PDO::FETCH_ASSOC);
 </head>
 <body>
     <div class="container">
+    <a href="javascript:history.back()" class="back-button">Назад</a>
         <h1>Оформление путевки</h1>
 
         <form method="POST">

@@ -4,7 +4,9 @@ require 'config.php';
 // Переменные для хранения статистики тура
 $tourStatistics = [];
 $errorMessage = '';
-
+$stmt = $pdo->prepare("SELECT \"PK_Tur\", \"Nazv_tur\" from \"Tur\"");
+$stmt->execute();
+$turs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 // Обработка формы
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $tour_id = intval($_POST['tour_id']); // Получение идентификатора тура
@@ -21,7 +23,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
     } catch (PDOException $e) {
-        // Обработка ошибок при выполнении запроса
         $errorMessage = "Ошибка при выполнении запроса: " . $e->getMessage();
     }
 }
@@ -125,11 +126,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
 
     <div class="container">
+    <a href="javascript:history.back()" class="back-button">Назад</a>
         <h1>Статистика тура</h1>
 
         <form method="post">
-            <label for="tour_id">Идентификатор тура:</label>
-            <input type="number" id="tour_id" name="tour_id" required>
+            <label for="tour_id">Тур:</label>
+            <select name="tour_id" id="tour_id" required>
+                <option value="">-- Выберите тур --</option>
+                <?php foreach ($turs as $tour): ?>
+                    <option value="<?= $tour['PK_Tur']; ?>">
+                        <?= htmlspecialchars($tour['Nazv_tur']); ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
             <button type="submit">Получить статистику тура</button>
         </form>
 

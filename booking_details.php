@@ -27,7 +27,7 @@ if ($putevka_id) {
         }
     } catch (PDOException $e) {
         // Обработка ошибок при выполнении запроса
-        $errorMessage = "Ошибка при выполнении запроса: " . $e->getMessage();
+        $errorMessage = "Ошибка при выполнении запроса";
     }
 }
 
@@ -48,7 +48,7 @@ if ($turist_id) {
         } 
     } catch (PDOException $e) { 
         // Обработка ошибок при выполнении запроса 
-        $errorMessage = "Ошибка при выполнении запроса: " . $e->getMessage(); 
+        $errorMessage = "Ошибка при выполнении запроса"; 
     } 
 }
 ?> 
@@ -155,6 +155,7 @@ if ($turist_id) {
 </head> 
 <body> 
     <div class="container">
+    <a href="javascript:history.back()" class="back-button">Назад</a>
         <h1>Информация о бронировании</h1>
         <?php if (!empty($errorMessage)): ?>
             <p style="color: red;"><?php echo htmlspecialchars($errorMessage); ?></p>

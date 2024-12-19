@@ -160,6 +160,7 @@ $kompaniya = $stmt->fetchAll();
     </script>
 </head>
 <body>
+<a href="javascript:history.back()" class="back-button">Назад</a>
     <h1>Создание нового тура</h1>
     <form action="submit_tur.php" method="post">
         <label for="nazv_tur">Название тура:</label>

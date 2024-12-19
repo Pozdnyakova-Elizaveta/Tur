@@ -1,5 +1,5 @@
 <?php
-require 'config.php'; // Подключение к базе данных
+require 'config.php';
 
 $message = '';
 
@@ -137,6 +137,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
     <div class="container">
+    <a href="javascript:history.back()" class="back-button">Назад</a>
         <h1>Регистрация Сотрудника</h1>
 
         <?php if (!empty($message)): ?>

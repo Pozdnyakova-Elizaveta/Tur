@@ -1,9 +1,10 @@
 <?php
 require 'config.php';
+$message="";
 
-// Обработка операций CRUD
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['add'])) {
+        try{
         $nazv_gorod = $_POST['Nazv_Gorod'];
         $nazv_strana = $_POST['Nazv_Strana'];
 
@@ -16,9 +17,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $pdo->prepare("INSERT INTO \"Gorod\" (\"Nazv_Gorod\", \"PK_Strana\") VALUES (:nazv_gorod, :pk_strana)");
             $stmt->execute(['nazv_gorod' => $nazv_gorod, 'pk_strana' => $pk_strana]);
         }
+    }catch (PDOException $e) {
+        $message = 'Ошибка добавления города';
+    }
     }
 
     if (isset($_POST['update'])) {
+        try {
         $pk_gorod = $_POST['PK_Gorod'];
         $nazv_gorod = $_POST['Nazv_Gorod'];
         $nazv_strana = $_POST['Nazv_Strana'];
@@ -32,12 +37,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $pdo->prepare("UPDATE \"Gorod\" SET \"Nazv_Gorod\" = :nazv_gorod, \"PK_Strana\" = :pk_strana WHERE \"PK_Gorod\" = :pk_gorod");
             $stmt->execute(['nazv_gorod' => $nazv_gorod, 'pk_strana' => $pk_strana, 'pk_gorod' => $pk_gorod]);
         }
+    } catch (PDOException $e) {
+        $message = 'Ошибка обновления данных о городе';
+    }
     }
 
     if (isset($_POST['delete'])) {
+        try{
         $pk_gorod = $_POST['PK_Gorod'];
         $stmt = $pdo->prepare("DELETE FROM \"Gorod\" WHERE \"PK_Gorod\" = :pk_gorod");
         $stmt->execute(['pk_gorod' => $pk_gorod]);
+    } catch (PDOException $e) {
+        $message = 'Ошибка - нельзя удалить запись о городе ';
+    }
     }
 }
 
@@ -57,6 +69,11 @@ $strany = $stmt->fetchAll();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Города</title>
     <style>
+                .message {
+            color: darkred;
+            text-align: center;
+            margin-bottom: 15px;
+        }
         html, body {
             height: 100%;
             margin: 0;
@@ -182,8 +199,11 @@ $strany = $stmt->fetchAll();
 </head>
 <body>
     <div class="container">
+    <a href="javascript:history.back()" class="back-button">Назад</a>
         <h1>Города</h1>
-
+        <?php if ($message): ?>
+            <p class="message"> <?= htmlspecialchars($message) ?> </p>
+    <?php endif; ?>
         <h2>Добавить город</h2>
         <form method="POST">
             <input type="text" name="Nazv_Gorod" required placeholder="Название города">

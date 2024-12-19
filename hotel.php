@@ -1,6 +1,6 @@
 <?php
 require 'config.php';
-
+$errorMessage="";
 $addresses = []; // Массив для хранения адресов
 if (isset($_GET['PK_Gorod'])) {
     $PK_Gorod = intval($_GET['PK_Gorod']);
@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_hotel'])) {
     $opisanie_otela = $_POST['Opisanie_Otel'];
     $pk_adres = $_POST['PK_Adres'];
 
-    $stmt = $pdo->prepare("INSERT INTO \"Otel\" (\"Nazv_Otel\", \"Klass\", \"Nomer_Tel_Otel\", \"Sait_Otel\", \"Opisanie_Otel\", \"PK_Adres\") VALUES (:nazv_otela, :klass, :nomer_tel_otela, :sait_otela, :opisanie_otela, :pk_adres)");
+    try {$stmt = $pdo->prepare("INSERT INTO \"Otel\" (\"Nazv_Otel\", \"Klass\", \"Nomer_Tel_Otel\", \"Sait_Otel\", \"Opisanie_Otel\", \"PK_Adres\") VALUES (:nazv_otela, :klass, :nomer_tel_otela, :sait_otela, :opisanie_otela, :pk_adres)");
     $stmt->execute([
         'nazv_otela' => $nazv_otela,
         'klass' => $klass,
@@ -54,12 +54,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_hotel'])) {
         'pk_adres' => $pk_adres
     ]);
 
-    header("Location: hotels.php?PK_Gorod=$PK_Gorod");
+    header("Location: hotel.php?PK_Gorod=$PK_Gorod");
     exit();
+}catch (PDOException $e) {
+    $errorMessage = "Ошибка при добавлении отеля";
+}
 }
 
 // Обработка обновления отеля
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_hotel'])) {
+    try{
     $pk_otela = intval($_POST['PK_Otel']);
     $nazv_otela = $_POST['Nazv_Otel'];
     $klass = intval($_POST['Klass']);
@@ -79,18 +83,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_hotel'])) {
         'pk_adres' => $pk_adres
     ]);
 
-    header("Location: hotels.php?PK_Gorod=$PK_Gorod");
+    header("Location: hotel.php?PK_Gorod=$PK_Gorod");
     exit();
+} catch (PDOException $e) {
+    $errorMessage = 'Ошибка при обновлении отеля';
+}
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_hotel'])) {
+    try{
     $pk_otela = intval($_POST['PK_Otel']);
 
     $stmt = $pdo->prepare("DELETE FROM \"Otel\" WHERE \"PK_Otel\" = :pk_otela");
     $stmt->execute(['pk_otela' => $pk_otela]);
 
-    header("Location: hotels.php?PK_Gorod=$PK_Gorod");
+    header("Location: hotel.php?PK_Gorod=$PK_Gorod");
     exit();
+}catch(PDOException $e) {
+    $errorMessage = 'Ошибка - нельзя удалить запись о отеле';
+}
 }
 
 ?>
@@ -100,11 +111,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_hotel'])) {
 <head>
     <meta charset="UTF-8">
     <title>Отели для города</title>
-    <link rel="stylesheet" href="styles.css"> <!-- Подключаем файл стилей, если нужно -->
+    <link rel="stylesheet" href="styles.css"> 
 </head>
 <body>
+<a href="javascript:history.back()" class="back-button">Назад</a>
 <h1>Отели для города: <?php echo htmlspecialchars($city_name); ?></h1>
-
+<?php if ($errorMessage): ?>
+            <p class="message"> <?= htmlspecialchars($errorMessage) ?> </p>
+    <?php endif; ?>
 <!-- Форма добавления отеля -->
 <form method="POST" class="hotel-form">
     <input type="text" name="Nazv_Otel" required placeholder="Название отеля">
@@ -154,14 +168,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_hotel'])) {
                     <input type="text" name="Sait_Otel" required value="<?php echo htmlspecialchars($hotel['Sait_Otel']); ?>">
                     <textarea name="Opisanie_Otel"><?php echo htmlspecialchars($hotel['Opisanie_Otel']); ?></textarea>
                     <select name="PK_Adres" required>
-                        <option value="">Выберите адрес</option>
-                        <?php foreach ($addresses as $address): ?>
-                            <option value="<?php echo htmlspecialchars($address['PK_Adres']); ?>"
-                                <?php echo $hotel['PK_Adres'] == $address['PK_Adres'] ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($address['Nazv_Ulica'] . ', ' . $address['Nomer_Dom'] . ($address['Korpus'] ? ' ' . htmlspecialchars($address['Korpus']) : '')); ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
+        <option value="">Выберите адрес</option>
+        <?php foreach ($addresses as $address): ?>
+            <option value="<?php echo htmlspecialchars($address['PK_Adres']); ?>">
+                <?php echo htmlspecialchars($address['Nazv_Ulica'] . ', ' . $address['Nomer_Dom'] . ($address['Korpus'] ? ' ' . htmlspecialchars($address['Korpus']) : '')); ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
                     <button type="submit" name="update_hotel">Обновить</button>
                 </form>
                 
@@ -178,6 +191,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_hotel'])) {
 </html>
 
 <style>
+                    .message {
+            color: darkred;
+            text-align: center;
+            margin-bottom: 15px;
+        }
     body {
         font-family: Arial, sans-serif;
         background: linear-gradient(45deg, #49a09d, #5f2c82);

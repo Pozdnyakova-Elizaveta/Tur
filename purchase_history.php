@@ -7,7 +7,7 @@ $errorMessage = '';
 
 // Обработка формы
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $client_id = intval($_POST['client_id']); // Получение идентификатора клиента
+    $client_id = intval($_POST['client_id']);
 
     try {
         // Получение информации по истории покупок
@@ -34,6 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>История покупок</title>
 </head>
 <body>
+<a href="javascript:history.back()" class="back-button">Назад</a>
     <h1>История покупок</h1>
 
     <!-- Форма для ввода идентификатора клиента -->

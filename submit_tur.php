@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if ($stmt->execute()) {
             // Перенаправление на tur.php после успешного создания тура
             header('Location: tur.php');
-            exit(); // Не забудьте остановить выполнение скрипта после перенаправления
+            exit();
         } else {
             echo "Ошибка при создании тура!";
         }

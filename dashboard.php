@@ -1,6 +1,6 @@
 <?php
 session_start();
-require 'config.php'; // Подключение к базе данных
+require 'config.php';
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php"); // Перенаправление на страницу входа, если пользователь не авторизован
@@ -21,7 +21,7 @@ try {
     $stmt->execute([$sotrudnik_id]);
     $sotrudnik = $stmt->fetch(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
-    $message = 'Ошибка получения данных сотрудника: ' . $e->getMessage();
+    $message = 'Ошибка получения данных сотрудника';
 }
 
 // Получение данных для выпадающих списков
@@ -34,7 +34,7 @@ try {
     $stmt = $pdo->query("SELECT \"PK_Dolzhnost\", \"Nazv_Dolzhnost\" FROM \"Dolzhnost\"");
     $positions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
-    $message = 'Ошибка получения данных: ' . $e->getMessage();
+    $message = 'Ошибка получения данных';
 }
 
 // Обработка редактирования информации
@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit'])) {
         $stmt->execute([$familia, $imya, $otchestvo, $email, $pk_kompaniya, $pk_dolzhnost, $sotrudnik_id]);
         $message = 'Информация успешно обновлена!';
     } catch (PDOException $e) {
-        $message = 'Ошибка обновления данных: ' . $e->getMessage();
+        $message = 'Ошибка обновления данных';
     }
 }
 ?>
@@ -166,6 +166,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit'])) {
 </head>
 <body>
     <div class="container">
+    <a href="javascript:history.back()" class="back-button">Назад</a>
         <h1>Личный Кабинет</h1>
 
         <?php if (!empty($message)): ?>
@@ -177,7 +178,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit'])) {
         <form method="post">
             <input type="text" name="familia" placeholder="Фамилия" value="<?= htmlspecialchars($sotrudnik['Familia']) ?>" required>
             <input type="text" name="imya" placeholder="Имя" value="<?= htmlspecialchars($sotrudnik['Imya']) ?>" required>
-            <input type="text" name="otchestvo" placeholder="Отчество" value="<?= htmlspecialchars($sotrudnik['Otchestvo']) ?>" required>
+            <input type="text" name="otchestvo" placeholder="Отчество" value="<?= htmlspecialchars(!empty($sotrudnik['Otchestvo']) ? $sotrudnik['Otchestvo'] : '') ?>" required>
             <input type="email" name="email" placeholder="Email" value="<?= htmlspecialchars($sotrudnik['Email']) ?>" required>
 
             <label for="pk_kompaniya">Выберите компанию:</label>
